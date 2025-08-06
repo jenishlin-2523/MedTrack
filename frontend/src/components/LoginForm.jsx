@@ -59,14 +59,6 @@ const LoginForm = () => {
         </div>
 
         <button type="submit">Login</button>
-        <h1>hi</h1>
-        <h1>hi</h1>
-        <h1>hi</h1>
-        <h1>hi</h1>
-        <h1>hi</h1>
-        <h1>hi</h1>
-        <h1>hi</h1>
-        <h1>hi</h1>
       </form>
     </div>
   );
