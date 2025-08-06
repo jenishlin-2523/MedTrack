@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from extensions import mongo
+from pymongo.errors import ConnectionFailure
 
 def create_app():
     app = Flask(__name__)
@@ -13,6 +14,15 @@ def create_app():
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
 
     mongo.init_app(app)
+
+    # Try to connect to MongoDB and print confirmation
+    try:
+        # Trigger a command to check connection
+        mongo.cx.admin.command('ping')
+        print("✅ Connected to MongoDB successfully.")
+    except ConnectionFailure as e:
+        print("❌ Failed to connect to MongoDB:", e)
+
     JWTManager(app)
 
     from routes.auth_routes import auth_bp
