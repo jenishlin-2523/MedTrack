@@ -1,12 +1,11 @@
 // src/utils/auth.js
-export const setToken = (token) => {
-  localStorage.setItem("token", token);
-};
 
-export const getToken = () => {
-  return localStorage.getItem("token");
-};
+// Token functions
+export const setToken = (token) => localStorage.setItem("token", token);
+export const getToken = () => localStorage.getItem("token");
+export const removeToken = () => localStorage.removeItem("token");
 
-export const removeToken = () => {
-  localStorage.removeItem("token");
-};
+// Role functions
+export const setUserRole = (role) => localStorage.setItem("role", role);
+export const getUserRole = () => localStorage.getItem("role");
+export const removeUserRole = () => localStorage.removeItem("role");

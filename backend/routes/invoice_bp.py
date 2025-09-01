@@ -4,15 +4,6 @@ from bson import ObjectId
 from datetime import datetime
 from app import mongo  # your MongoDB instance
 from flask_cors import CORS, cross_origin
-from twilio.rest import Client
-import os
-
-# Twilio credentials (use environment variables for security)
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-TWILIO_PHONE = os.getenv("TWILIO_PHONE")
-
-twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
 # Blueprint setup
 invoice_bp = Blueprint("invoice_bp_v1", __name__)
@@ -34,7 +25,17 @@ def create_invoice():
         if field not in data or (field == "items" and len(data["items"]) == 0):
             return jsonify({"error": f"'{field}' is required"}), 400
 
-    # Calculate total and add subtotal to items
+    # Check if user already exists, if not create it as role 'user'
+    existing_user = mongo.db.users.find_one({"username": data["username"]})
+    if not existing_user:
+        from werkzeug.security import generate_password_hash
+        mongo.db.users.insert_one({
+            "username": data["username"],
+            "password": generate_password_hash(data["password"]),
+            "role": "user"
+        })
+
+    # Calculate total and add subtotal
     total_amount = 0
     for item in data["items"]:
         if "price" not in item or "quantity" not in item:
@@ -63,31 +64,3 @@ def create_invoice():
         "invoice_id": str(result.inserted_id),
         "total_amount": total_amount
     }), 201
-
-
-# ----------------------------
-# Send SMS Endpoint
-# ----------------------------
-@invoice_bp.route("/send-sms", methods=["POST"])
-@jwt_required()
-@cross_origin(origins=["http://localhost:3000"])
-def send_invoice_sms():
-    data = request.get_json()
-    mobile = data.get("mobile")
-    username = data.get("username")
-    password = data.get("password")
-
-    if not mobile or not username or not password:
-        return jsonify({"error": "mobile, username, and password are required"}), 400
-
-    message_text = f"Hello! Your invoice account has been created.\nUsername: {username}\nPassword: {password}"
-
-    try:
-        sms = twilio_client.messages.create(
-            body=message_text,
-            from_=TWILIO_PHONE,
-            to=mobile
-        )
-        return jsonify({"message": "SMS sent successfully", "sid": sms.sid}), 200
-    except Exception as e:
-        return jsonify({"error": "Failed to send SMS", "details": str(e)}), 500

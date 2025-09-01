@@ -10,6 +10,7 @@ def register():
     data = request.get_json()
     username = data.get("username")
     password = data.get("password")
+    role = data.get("role", "user")  # default role is user
 
     if not username or not password:
         return jsonify({"msg": "Missing username or password"}), 400
@@ -21,10 +22,12 @@ def register():
     hashed_pw = generate_password_hash(password)
     mongo.db.users.insert_one({
         "username": username,
-        "password": hashed_pw
+        "password": hashed_pw,
+        "role": role
     })
 
-    return jsonify({"msg": "User registered successfully"}), 201
+    return jsonify({"msg": f"{role.capitalize()} registered successfully"}), 201
+
 
 
 @auth_bp.route("/login", methods=["POST"])
@@ -40,5 +43,7 @@ def login():
     access_token = create_access_token(identity=str(user["_id"]))
     return jsonify({
         "access_token": access_token,
+        "role": user.get("role", "user"),  # include role in response
         "msg": "Login successful"
     }), 200
+
