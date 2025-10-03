@@ -7,29 +7,39 @@ import ExpiredMedicines from "../pages/ExpiredMedicines";
 import ExpiringSoon from "../pages/ExpiringSoon";
 import ManageStock from "../pages/ManageStock";
 import NewInvoice from "../pages/NewInvoice";
-import { PlusCircle, ListOrdered, LogOut, Bell, Home , ShieldX, TimerReset, PackageCheck, FileText, Clock, Warehouse} from "lucide-react";
+import Order from "../pages/Order";
+import DashHome from "../pages/DashHome";
+
+import {
+  PlusCircle,
+  Warehouse,
+  LogOut,
+  Bell,
+  Home,
+  ShieldX,
+  TimerReset,
+  PackageCheck,
+  FileText,
+  Package,
+} from "lucide-react";
 import axios from "axios";
-
-
-
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const username = localStorage.getItem("username") || "Admin";
-
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const token = localStorage.getItem("token");
 
-  // Fetch unread notifications count
+  // Fetch unread notifications
   const fetchUnreadCount = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/medicine/notifications", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const res = await axios.get(
+        "http://localhost:5000/api/medicine/notifications",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       const allNotifications = res.data.notifications || [];
-      const unread = allNotifications.filter((n) => !n.read).length;
+      const unread = allNotifications.filter((n) => !n.notification_read).length;
       setUnreadCount(unread);
     } catch (err) {
       console.error("Failed to load notification count", err);
@@ -37,18 +47,14 @@ const Dashboard = () => {
     }
   };
 
-  // Fetch on mount and every 30 seconds
   useEffect(() => {
     fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 2000); // every 10s
+    const interval = setInterval(fetchUnreadCount, 10000); // every 10s
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch again when notification popup closes
   useEffect(() => {
-    if (!showNotifications) {
-      fetchUnreadCount();
-    }
+    if (!showNotifications) fetchUnreadCount();
   }, [showNotifications]);
 
   const handleLogout = () => {
@@ -59,6 +65,7 @@ const Dashboard = () => {
 
   return (
     <div style={layoutStyle}>
+      {/* Header */}
       <header style={headerStyle}>
         <div style={logoStyle}>MediTrack</div>
         <div style={headerRightStyle}>
@@ -83,70 +90,95 @@ const Dashboard = () => {
         </div>
       </header>
 
+      {/* Main container */}
       <div style={mainContainerStyle}>
+        {/* Sidebar */}
         <aside style={sidebarStyle}>
           <h3 style={sidebarTitleStyle}>Dashboard</h3>
           <button style={buttonStyle} onClick={() => navigate("/dashboard")}>
             <Home size={16} style={iconMargin} />
             Home
           </button>
-          <button style={buttonStyle} onClick={() => navigate("/dashboard/add-medicine")}>
+          <button
+            style={buttonStyle}
+            onClick={() => navigate("/dashboard/add-medicine")}
+          >
             <PlusCircle size={16} style={iconMargin} />
             Add Medicine
           </button>
-          <button style={buttonStyle} onClick={() => navigate("/dashboard/medicine-list")}>
+          <button
+            style={buttonStyle}
+            onClick={() => navigate("/dashboard/medicine-list")}
+          >
             <Warehouse size={16} style={iconMargin} />
             Inventory
           </button>
-          
-          <hr style={{ margin: "20px 0", border: "1px solid #ddd" }} />
-          <h> <b> Stock </b></h>
-          <hr/>
 
-          <button style={buttonStyle} onClick={() => navigate("/dashboard/manage-stock")}>
+          <hr style={{ margin: "20px 0", border: "1px solid #ddd" }} />
+          <b>Stock</b>
+          <hr />
+
+          <button
+            style={buttonStyle}
+            onClick={() => navigate("/dashboard/manage-stock")}
+          >
             <PackageCheck size={16} style={iconMargin} />
             Manage Stock
           </button>
 
-          <button style={buttonStyle} onClick={() => navigate("/dashboard/expiring-soon")}>
+          <button
+            style={buttonStyle}
+            onClick={() => navigate("/dashboard/expiring-soon")}
+          >
             <TimerReset size={16} style={iconMargin} />
-           Expiring Soon
+            Expiring Soon
           </button>
 
-          <button style={buttonStyle} onClick={() => navigate("/dashboard/expired")}>
+          <button
+            style={buttonStyle}
+            onClick={() => navigate("/dashboard/expired")}
+          >
             <ShieldX size={16} style={iconMargin} />
             Expired Medicines
-          </button>     
+          </button>
 
           <hr style={{ margin: "20px 0", border: "1px solid #ddd" }} />
-          <h> <b> Billing </b></h>
-          <hr/>
+          <b>Billing</b>
+          <hr />
 
-          <button style={buttonStyle} onClick={() => navigate("/dashboard/billing")}>
-           <FileText size={16} style={iconMargin} />
-           New Invoice
+          <button
+            style={buttonStyle}
+            onClick={() => navigate("/dashboard/billing")}
+          >
+            <FileText size={16} style={iconMargin} />
+            New Invoice
           </button>
 
-          <button style={buttonStyle} onClick={() => navigate("/dashboard/billing-history")}>
-           <Clock size={16} style={iconMargin} />
-            Billing History
+          <button
+            style={buttonStyle}
+            onClick={() => navigate("/dashboard/order")}
+          >
+            <Package size={16} style={iconMargin} />
+            Order / Refill
           </button>
 
-
-
+          <hr style={{ margin: "20px 0", border: "1px solid #ddd" }} />
+          <hr />
 
         </aside>
+        
 
+        {/* Main content */}
         <main style={mainContentStyle}>
           <Routes>
-            <Route path="/" element={<DashboardHome />} />
+            <Route path="/" element={<DashHome />} />
             <Route path="add-medicine" element={<MedicineForm />} />
             <Route path="medicine-list" element={<MedicineList />} />
-            <Route path="expiring-soon" element={<ExpiringSoon/>} />
+            <Route path="expiring-soon" element={<ExpiringSoon />} />
             <Route path="expired" element={<ExpiredMedicines />} />
             <Route path="manage-stock" element={<ManageStock />} />
             <Route path="billing" element={<NewInvoice />} />
-           
+            <Route path="order" element={<Order />} />
           </Routes>
         </main>
       </div>
@@ -154,14 +186,7 @@ const Dashboard = () => {
   );
 };
 
-const DashboardHome = () => (
-  <div>
-    <h2>Welcome to MediTrack Dashboard</h2>
-    <p>Use the sidebar to manage medicines and view your inventory.</p>
-  </div>
-);
-
-// Badge for unread notifications
+// Styles
 const badgeStyle = {
   position: "absolute",
   top: "-4px",
@@ -172,15 +197,10 @@ const badgeStyle = {
   padding: "2px 6px",
   fontSize: "10px",
   fontWeight: "bold",
+  
 };
 
-// Layout styles
-const layoutStyle = {
-  display: "flex",
-  flexDirection: "column",
-  height: "100vh",
-};
-
+const layoutStyle = { display: "flex", flexDirection: "column", height: "100vh" };
 const headerStyle = {
   height: "60px",
   backgroundColor: "#0e2850ff",
@@ -189,33 +209,13 @@ const headerStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
+  
 };
-
-const logoStyle = {
-  fontSize: "20px",
-  fontWeight: "bold",
-};
-
-const headerRightStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: "15px",
-};
-
-const usernameStyle = {
-  fontWeight: "500",
-};
-
-const iconStyle = {
-  cursor: "pointer",
-};
-
-const mainContainerStyle = {
-  display: "flex",
-  flex: 1,
-  overflow: "hidden",
-};
-
+const logoStyle = { fontSize: "20px", fontWeight: "bold" };
+const headerRightStyle = { display: "flex", alignItems: "center", gap: "15px" };
+const usernameStyle = { fontWeight: "500" };
+const iconStyle = { cursor: "pointer" };
+const mainContainerStyle = { display: "flex", flex: 1, overflow: "hidden", };
 const sidebarStyle = {
   width: "220px",
   backgroundColor: "#f0f0f0",
@@ -224,11 +224,7 @@ const sidebarStyle = {
   flexDirection: "column",
   overflowY: "auto",
 };
-
-const sidebarTitleStyle = {
-  marginBottom: "20px",
-};
-
+const sidebarTitleStyle = { marginBottom: "20px" };
 const buttonStyle = {
   padding: "10px 15px",
   background: "#ffffff",
@@ -239,15 +235,7 @@ const buttonStyle = {
   alignItems: "center",
   marginBottom: "10px",
 };
-
-const iconMargin = {
-  marginRight: "8px",
-};
-
-const mainContentStyle = {
-  flex: 1,
-  padding: "20px",
-  overflowY: "auto",
-};
+const iconMargin = { marginRight: "8px" };
+const mainContentStyle = { flex: 1, padding: "20px", overflowY: "auto" };
 
 export default Dashboard;

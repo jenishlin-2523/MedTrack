@@ -58,7 +58,7 @@ const ManageStock = () => {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h2>📦 Manage Stock</h2>
+      <h2>Manage Stock</h2>
 
       <div style={topBar}>
         <input

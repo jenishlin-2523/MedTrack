@@ -32,7 +32,7 @@ const ExpiringSoon = () => {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h2>⏳ Expiring Soon</h2>
+      <h2>Expiring Soon</h2>
       <table style={tableStyle}>
         <thead>
           <tr>

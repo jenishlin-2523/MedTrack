@@ -127,7 +127,7 @@ const MedicineForm = () => {
     <div>
       {/* Manual Entry Section */}
       <div style={sectionStyle}>
-        <h3 style={headingStyle}>➕ Add Medicine</h3>
+        <h3 style={headingStyle}>Add Medicine</h3>
         <form onSubmit={handleSubmit}>
           <div
             style={{
@@ -190,7 +190,7 @@ const MedicineForm = () => {
 
       {/* CSV Upload Section */}
       <div style={sectionStyle}>
-        <h3 style={headingStyle}>📄 Upload CSV File</h3>
+        <h3 style={headingStyle}>Upload CSV File</h3>
         <input type="file" accept=".csv" onChange={handleCSVChange} style={{ marginTop: "10px" }} />
         <br />
         <button onClick={handleCSVUpload} style={greenButton}>Upload CSV</button>

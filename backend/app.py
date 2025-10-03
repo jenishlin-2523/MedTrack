@@ -43,12 +43,14 @@ def create_app():
     from routes.auth_routes import auth_bp
     from routes.medicine_routes import medicine_bp
     from routes.invoice_bp import invoice_bp
-    from routes.patient_bp import patient_bp  # <-- new patient dashboard blueprint
+    from routes.patient_bp import patient_bp
+    from routes.user_bp import user_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(medicine_bp, url_prefix="/api/medicine")
     app.register_blueprint(invoice_bp, url_prefix="/api/invoice")
-    app.register_blueprint(patient_bp, url_prefix="/api/patient")  # <-- register patient dashboard
+    app.register_blueprint(patient_bp, url_prefix="/api/patient")
+    app.register_blueprint(user_bp, url_prefix="/api/user")
 
     return app
 

@@ -40,7 +40,7 @@ const ExpiredMedicines = () => {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h2>❌ Expired Medicines</h2>
+      <h2>Expired Medicines</h2>
       <table style={tableStyle}>
         <thead>
           <tr>
@@ -54,7 +54,7 @@ const ExpiredMedicines = () => {
           {medicines.length === 0 ? (
             <tr>
               <td style={tdStyle} colSpan="4">
-                ✅ No expired medicines
+                No expired medicines
               </td>
             </tr>
           ) : (

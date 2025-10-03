@@ -59,10 +59,12 @@ const NewInvoice = () => {
     try {
       const res = await axios.get(`${BASE_URL}/api/medicine/list`, { headers: { Authorization: `Bearer ${token}` } });
       setMedicineList(res.data || []);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  // --- Fetch Last Invoice Number (Global) ---
+  // --- Fetch Last Invoice Number ---
   const fetchNextInvoiceNumber = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/api/invoice/last`, { headers: { Authorization: `Bearer ${token}` } });
@@ -78,7 +80,7 @@ const NewInvoice = () => {
     }
   };
 
-  // --- Load invoice number from localStorage if exists ---
+  // --- Load invoice number from localStorage ---
   useEffect(() => {
     const savedNumber = localStorage.getItem("invoiceNumber");
     if (savedNumber) setInvoiceNumber(savedNumber);
@@ -103,7 +105,6 @@ const NewInvoice = () => {
   const addMedicineToInvoice = (med) => {
     if (!med?._id || isExpired(med.expiry_date) || med.quantity === 0) return;
     if (invoiceItems.some(x => x._id === med._id)) return;
-
     setInvoiceItems(prev => [...prev, { ...med, selectedQty: 1, subtotal: med.price, schedule: [], times: DEFAULT_TIMES }]);
     setAddMedicineOpen(false); setQuery(""); setSuggestions([]); setIgnoreBlur(false);
   };
@@ -128,7 +129,6 @@ const NewInvoice = () => {
       return updated;
     });
   };
-
   const updateScheduleTime = (index, timeKey, value) => {
     setInvoiceItems(prev => {
       const updated = [...prev];
@@ -144,95 +144,163 @@ const NewInvoice = () => {
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const margin = 40;
     let y = margin;
+    const blue = '#285194';
+    const totalRowBg = '#f0f0f0';
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const tableEnd = pageWidth - margin;
+    const formatCurrency = (amount) => (Number(amount) || 0).toFixed(2);
 
-    doc.setFontSize(14); doc.text("MediTrack Pharmacy", margin, y); y += 16;
-    doc.setFontSize(11); doc.text("Chunkankadai, Nagercoil, TamilNadu", margin, y); y += 14;
-    doc.text("Contact: +91 9876543210 | meditrackpharmacy@gmail.com", margin, y); y += 30;
-    doc.setFontSize(18); doc.text("Invoice", margin, y); y += 24;
-    doc.setFontSize(11);
-    doc.text(`Invoice No: ${invoiceNumber}`, margin, y);
-    doc.text(`Date: ${invoiceDate}`, 300, y); y += 18;
-    doc.text(`Patient: ${patientName || "-"}`, margin, y);
-    doc.text(`Contact: ${contactNumber || "-"}`, 300, y); y += 24;
+    const totalAmount = invoiceItems.reduce((sum, item) => sum + (item.subtotal || 0), 0);
 
-    doc.setFont(undefined, "bold"); doc.text("Medicine", margin, y); doc.text("Qty", 280, y);
-    doc.text("Price", 340, y); doc.text("Schedule", 400, y); doc.text("Subtotal", 480, y);
-    doc.setFont(undefined, "normal"); y += 10; doc.line(margin, y, 550, y); y += 16;
+    doc.setFillColor(blue);
+    doc.rect(0, y - 20, pageWidth, 2, 'F');
+    y += 20;
 
+    doc.setFontSize(30);
+    doc.setFont(undefined, "bold");
+    doc.setTextColor(blue);
+    doc.text("INVOICE", margin, y);
+    doc.setTextColor(0);
+    y += 50;
+
+    // LEFT
+    doc.setFontSize(10);
+    doc.setFont(undefined, "bold");
+    doc.text("MEDI TRACK PHARMACY", margin, y);
+    doc.setFont(undefined, "normal");
+    y += 14;
+    doc.text("Chunkankadai, Nagercoil, TamilNadu", margin, y);
+    y += 12;
+    doc.text("Contact: +91 9876543210", margin, y);
+    y += 12;
+    doc.text("meditrackpharmacy@gmail.com", margin, y);
+
+    // RIGHT
+    let rightColX = 300;
+    let valueColX = 400;
+    let tempY = y - 40;
+
+    doc.setFont(undefined, "bold");
+    doc.text("BILLED TO:", rightColX, tempY);
+    doc.setFont(undefined, "normal");
+    tempY += 14;
+    doc.text(`Patient Name:`, rightColX, tempY); doc.text(patientName || '-', valueColX, tempY);
+    tempY += 12;
+    doc.text(`Contact:`, rightColX, tempY); doc.text(contactNumber || '-', valueColX, tempY);
+    tempY += 18;
+    doc.text("Invoice No:", rightColX, tempY); doc.text(invoiceNumber || '-', valueColX, tempY);
+    tempY += 12;
+    doc.text("Issue Date:", rightColX, tempY); doc.text(invoiceDate || '-', valueColX, tempY);
+
+    y = Math.max(y, tempY) + 40;
+
+    const colX = { desc: margin, qty: 360, price: 450, total: 540 };
+
+    doc.setFillColor(blue);
+    doc.rect(margin, y, tableEnd - margin, 18, 'F');
+
+    doc.setFontSize(10);
+    doc.setFont(undefined, "bold");
+    doc.setTextColor(255);
+    doc.text("ITEMS DESCRIPTION", colX.desc, y + 12);
+    doc.text("QTY", colX.qty, y + 12, { align: 'center' });
+    doc.text("UNIT PRICE", colX.price, y + 12, { align: 'right' });
+    doc.text("TOTAL", colX.total, y + 12, { align: 'right' });
+    doc.setTextColor(0);
+    y += 28;
+
+    doc.setFontSize(10);
+    doc.setFont(undefined, "normal");
     invoiceItems.forEach((i) => {
-      const scheduleString = i.schedule?.map(timeKey => `${timeKey.charAt(0)} (${i.times?.[timeKey] || DEFAULT_TIMES[timeKey]})`).join(", ") || "-";
-      doc.text(i.name || "-", margin, y);
-      doc.text(String(i.selectedQty || 0), 280, y);
-      doc.text(currency(i.price || 0), 340, y);
-      doc.text(doc.splitTextToSize(scheduleString, 140), 400, y);
-      doc.text(currency(i.subtotal || 0), 480, y);
-      y += 18;
+      doc.setFont(undefined, "bold");
+      doc.text(i.name || "-", colX.desc, y);
+      doc.setFont(undefined, "normal");
+      doc.text(String(i.selectedQty || 0), colX.qty, y, { align: 'center' });
+      doc.text(formatCurrency(i.price || 0), colX.price, y, { align: 'right' });
+      doc.text(formatCurrency(i.subtotal || 0), colX.total, y, { align: 'right' });
+      doc.setDrawColor('#cccccc');
+      doc.line(margin, y + 5, tableEnd, y + 5);
+      y += 20;
     });
 
-    y += 8; doc.line(margin, y, 550, y); y += 22;
-    doc.setFont(undefined, "bold"); doc.text(`Total: ${currency(totalAmount)}`, 480, y);
+    y += 10;
+
+    const totalBoxLabelX = 400;
+    const totalBoxValueX = colX.total;
+
+    doc.setFontSize(10);
     doc.setFont(undefined, "normal");
-    y = 780; doc.setFontSize(9); doc.text("Medicines once sold will not be returned or exchanged.", margin, y);
-    doc.text("Thank you for choosing our pharmacy!", margin, y + 14);
+    doc.text("Sub Total", totalBoxLabelX, y);
+    doc.text(formatCurrency(totalAmount), totalBoxValueX, y, { align: 'right' });
+    y += 15;
+
+    y += 5;
+    doc.setFillColor(totalRowBg);
+    doc.rect(totalBoxLabelX - 10, y - 10, totalBoxValueX - totalBoxLabelX + 20, 20, 'F');
+    doc.setFontSize(12);
+    doc.setFont(undefined, "bold");
+    doc.setTextColor(blue);
+    doc.text("TOTAL", totalBoxLabelX, y + 3);
+    doc.text(formatCurrency(totalAmount), totalBoxValueX, y + 3, { align: 'right' });
+    doc.setTextColor(0);
+    y += 30;
+
+    doc.setFontSize(10);
+    doc.setFont(undefined, "bold");
+    doc.text("THANK YOU FOR YOUR BUSINESS", margin, y);
+    y += 15;
+    doc.setFont(undefined, "normal");
+    doc.setFontSize(9);
+    doc.text("Invoice Terms:", margin, y);
+    y += 12;
+    doc.text("Medicines once sold will not be returned or exchanged.", margin, y);
+
     doc.output("dataurlnewwindow");
   };
 
   // --- Submit Invoice ---
-const handleSubmit = async () => {
-  if (!patientName || !contactNumber) return alert("Please fill Patient Name and Contact Number.");
-  if (invoiceItems.length === 0) return alert("Please add at least one medicine.");
+  const handleSubmit = async () => {
+    if (!patientName || !contactNumber) return alert("Please fill Patient Name and Contact Number.");
+    if (invoiceItems.length === 0) return alert("Please add at least one medicine.");
 
-  try {
-    const payload = {
-      invoiceNumber,
-      invoiceDate,
-      patientName,
-      contactNumber,
-      items: invoiceItems.map((i) => ({
-        medicineId: i._id,
-        name: i.name,
-        price: i.price,
-        selectedQty: i.selectedQty,
-        subtotal: i.subtotal,
-        schedule: i.schedule?.length
-          ? i.schedule.map((timeKey) => ({
-              time: timeKey,
-              value: i.times?.[timeKey],
-            }))
-          : [],
-      })),
-    };
+    try {
+      const payload = {
+        invoiceNumber,
+        invoiceDate,
+        patientName,
+        contactNumber,
+        items: invoiceItems.map((i) => ({
+          medicineId: i._id,
+          name: i.name,
+          price: i.price,
+          selectedQty: i.selectedQty,
+          subtotal: i.subtotal,
+          schedule: i.schedule?.length ? i.schedule.map(timeKey => ({ time: timeKey, value: i.times?.[timeKey] })) : [],
+        })),
+      };
 
-    const res = await axios.post(`${BASE_URL}/api/invoice/new`, payload, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+      const res = await axios.post(`${BASE_URL}/api/invoice/new`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    renderPdf();
+      renderPdf();
 
-    if (res.data.password) {
-      alert(`New user created! SMS sent to ${contactNumber}`);
-    } else {
-      alert(`Invoice added for existing user ${contactNumber}`);
+      if (res.data.password) alert(`New user created! SMS sent to ${contactNumber}`);
+      else alert(`Invoice added for existing user ${contactNumber}`);
+
+      setPatientName("");
+      setContactNumber("");
+      setInvoiceItems([]);
+
+      const nextNumber = nextInvoiceNumber(invoiceNumber);
+      setInvoiceNumber(nextNumber);
+      localStorage.setItem("invoiceNumber", nextNumber);
+    } catch (e) {
+      console.error("AxiosError:", e);
+      alert("Failed to submit invoice.");
     }
+  };
 
-    // --- Reset everything ---
-    setPatientName("");
-    setContactNumber("");
-    setInvoiceItems([]);
-
-    // --- Generate next invoice number ---
-    const nextNumber = nextInvoiceNumber(invoiceNumber);
-    setInvoiceNumber(nextNumber);
-    localStorage.setItem("invoiceNumber", nextNumber);
-
-  } catch (e) {
-    console.error("AxiosError:", e);
-    alert("Failed to submit invoice.");
-  }
-};
-
-
-  // --- Render ---
   return (
     <div style={containerStyle}>
       <div style={{ textAlign: "center", marginBottom: 20 }}>
@@ -289,8 +357,10 @@ const handleSubmit = async () => {
                 <td style={{ ...td, color: item.quantity === 0 || isExpired(item.expiry_date) ? "red" : "#333" }}>
                   {item.quantity === 0 ? "Out of Stock" : isExpired(item.expiry_date) ? "Expired" : item.quantity}
                 </td>
-                <td style={td}><input type="number" min="1" max={item.quantity} value={item.selectedQty} onChange={e => updateQuantity(idx, e.target.value)} style={{ width: 70, textAlign: 'center', borderRadius: 6, border: '1px solid #ddd', padding: 6 }} /></td>
-                <td style={{...td, minWidth: 150}}>
+                <td style={td}>
+                  <input type="number" min="1" max={item.quantity} value={item.selectedQty} onChange={e => updateQuantity(idx, e.target.value)} style={{ width: 70, textAlign: 'center', borderRadius: 6, border: '1px solid #ddd', padding: 6 }} />
+                </td>
+                <td style={{ ...td, minWidth: 150 }}>
                   {Object.keys(DEFAULT_TIMES).map(timeKey => (
                     <div key={timeKey} style={{ display: 'flex', alignItems: 'center', marginBottom: 4, fontSize: 12 }}>
                       <label style={{ marginRight: 8, minWidth: 20 }}>

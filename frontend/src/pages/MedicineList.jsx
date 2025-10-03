@@ -140,7 +140,7 @@ const MedicineList = () => {
 
   return (
     <div style={containerStyle}>
-      <h2 style={titleStyle}>💊 Pharmacy Medicine Inventory</h2>
+      <h2 style={titleStyle}>Pharmacy Medicine Inventory</h2>
 
       <div style={controlBarStyle}>
         <input
