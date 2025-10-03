@@ -1,17 +1,17 @@
 // src/App.jsx
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { getToken, getUserRole } from "./utils/auth"; // make sure getUserRole exists
+import { getToken, getUserRole } from "./utils/auth"; // ensure getUserRole exists
 import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import Dashboard from "./components/Dashboard"; // admin dashboard
 import UserDashboard from "./components/UserDashboard"; // user dashboard
 
-// ProtectedRoute component
+// ---------------- ProtectedRoute ----------------
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const location = useLocation();
-  const token = getToken();
-  const role = getUserRole();
+  const token = React.useMemo(() => getToken(), []);
+  const role = React.useMemo(() => getUserRole(), []);
 
   if (!token) {
     // Not logged in
@@ -20,16 +20,24 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
   if (allowedRoles && !allowedRoles.includes(role)) {
     // Role not authorized
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return children;
 };
 
-const App = () => {
-  const token = getToken();
-  const role = getUserRole();
+// ---------------- RootRedirect ----------------
+const RootRedirect = () => {
+  const token = React.useMemo(() => getToken(), []);
+  const role = React.useMemo(() => getUserRole(), []);
 
+  if (!token) return <Navigate to="/login" replace />;
+  if (role === "admin") return <Navigate to="/dashboard" replace />;
+  return <Navigate to="/user-dashboard" replace />;
+};
+
+// ---------------- App Component ----------------
+const App = () => {
   return (
     <BrowserRouter>
       <Routes>
@@ -58,19 +66,10 @@ const App = () => {
         />
 
         {/* Root redirect */}
-        <Route
-          path="/"
-          element={
-            token
-              ? role === "admin"
-                ? <Navigate to="/dashboard" />
-                : <Navigate to="/user-dashboard" />
-              : <Navigate to="/login" />
-          }
-        />
+        <Route path="/" element={<RootRedirect />} />
 
         {/* Catch-all fallback */}
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

@@ -9,7 +9,9 @@ from werkzeug.utils import secure_filename
 
 medicine_bp = Blueprint("medicine", __name__)
 
-# ✅ Route to add a single medicine manually
+# --------------------------
+# Add single medicine manually
+# --------------------------
 @medicine_bp.route("/add", methods=["POST"])
 @jwt_required()
 def add_medicine():
@@ -41,7 +43,9 @@ def add_medicine():
     return jsonify({"msg": "Medicine added successfully", "id": str(result.inserted_id)}), 201
 
 
-# ✅ Upload medicine stock via CSV
+# --------------------------
+# Upload medicine CSV
+# --------------------------
 @medicine_bp.route("/upload-csv", methods=["POST"])
 @jwt_required()
 def upload_csv():
@@ -90,7 +94,9 @@ def upload_csv():
         return jsonify({"error": "Failed to process CSV", "details": str(e)}), 500
 
 
-# ✅ Get list of all medicines with expiry status
+# --------------------------
+# List all medicines with expiry status
+# --------------------------
 @medicine_bp.route("/list", methods=["GET"])
 @jwt_required()
 def list_medicines():
@@ -123,7 +129,9 @@ def list_medicines():
     return jsonify(result), 200
 
 
-# ✅ Get minimal medicine list (for dropdowns etc.)
+# --------------------------
+# Get minimal medicine list (dropdowns etc.)
+# --------------------------
 @medicine_bp.route("/medicines", methods=["GET"])
 @jwt_required()
 def get_all_medicines():
@@ -139,15 +147,16 @@ def get_all_medicines():
             "type": med.get("type", ""),
             "pack_size_label": med.get("pack_size_label", ""),
             "expiry_date": med.get("expiry_date", ""),
+            "quantity": med.get("quantity", 0),
             "is_discontinued": med.get("is_discontinued", False),
-            "short_composition1": med.get("short_composition1", ""),
-            "short_composition2": med.get("short_composition2", "")
         })
 
     return jsonify(medicine_list), 200
 
 
-# ✅ Get medicine by ID (for auto-fill)
+# --------------------------
+# Get medicine by ID (for auto-fill)
+# --------------------------
 @medicine_bp.route("/medicine/<medicine_id>", methods=["GET"])
 @jwt_required()
 def get_medicine_by_id(medicine_id):
@@ -172,29 +181,45 @@ def get_medicine_by_id(medicine_id):
     }), 200
 
 
-# ✅ Delete medicine
-@medicine_bp.route("/<string:medicine_id>", methods=["DELETE"])
-@jwt_required()
-def delete_medicine(medicine_id):
-    user_id = get_jwt_identity()
+# --------------------------
+# Reduce stock when invoice is created
+# --------------------------
+def reduce_stock(items):
+    """
+    items: list of {medicineId, selectedQty}
+    """
+    for item in items:
+        mongo.db.medicines.update_one(
+            {"_id": ObjectId(item["medicineId"])},
+            {"$inc": {"quantity": -int(item["selectedQty"])}}
+        )
 
-    try:
-        result = mongo.db.medicines.delete_one({
-            "_id": ObjectId(medicine_id),
-            "user_id": ObjectId(user_id)
+
+# --------------------------
+# Admin: Get all medicine stock
+# --------------------------
+@medicine_bp.route("/admin/stock", methods=["GET"])
+@jwt_required()
+def admin_stock():
+    user_id = get_jwt_identity()
+    user = mongo.db.users.find_one({"_id": ObjectId(user_id)})
+    if user.get("role") != "admin":
+        return jsonify({"error": "Unauthorized"}), 403
+
+    medicines = mongo.db.medicines.find()
+    stock = []
+    for med in medicines:
+        stock.append({
+            "id": str(med["_id"]),
+            "name": med["name"],
+            "expiry_date": med["expiry_date"],
+            "quantity": med.get("quantity", 0),
+            "price": med.get("price", 0),
+            "manufacturer_name": med.get("manufacturer_name", ""),
+            "type": med.get("type", "")
         })
 
-        if result.deleted_count == 1:
-            return jsonify({"msg": "Medicine deleted successfully"}), 200
-        else:
-            return jsonify({"error": "Medicine not found or unauthorized"}), 404
-
-    except Exception as e:
-        return jsonify({
-            "error": "Invalid ID or internal error",
-            "details": str(e)
-        }), 400
-
+    return jsonify(stock), 200
 
 # ✅ Get expiry notifications
 @medicine_bp.route("/notifications", methods=["GET"])
@@ -272,4 +297,3 @@ def mark_notifications_as_read():
     return jsonify({
         "msg": f"{result.modified_count} notifications marked as read"
     }), 200
-
