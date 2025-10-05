@@ -12,7 +12,7 @@ def create_app():
     CORS(app, resources={r"/api/*": {
     "origins": [
         "http://localhost:3000",
-        "http://192.168.1.4:3000"
+        "http://10.241.243.182:3000"
     ],
     "supports_credentials": True,
     "allow_headers": ["Content-Type", "Authorization"],

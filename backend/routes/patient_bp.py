@@ -6,7 +6,7 @@ from extensions import mongo
 from flask_cors import CORS, cross_origin
 
 patient_bp = Blueprint("patient_bp", __name__)
-CORS(patient_bp, origins=["http://localhost:3000", "http://192.168.1.4:3000"], supports_credentials=True)
+CORS(patient_bp, origins=["http://localhost:3000", "http://10.241.243.182:3000"], supports_credentials=True)
 
 @patient_bp.route("/user-dashboard", methods=["GET"])
 @jwt_required()
