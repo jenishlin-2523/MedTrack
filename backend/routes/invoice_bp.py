@@ -17,16 +17,16 @@ import string
 invoice_bp = Blueprint("invoice_bp_v1", __name__)
 CORS(invoice_bp, origins=[
     "http://localhost:3000",       # laptop React
-    "http://10.241.243.182:3000"     # mobile React
+    "http://10.152.219.167:3000"     # mobile React
 ], supports_credentials=True)
 
 
 # ----------------------------
 # Helper functions
 # ----------------------------
-def generate_password(length=6):
-    """Generate random password."""
-    return "".join(random.choices(string.ascii_letters + string.digits, k=length))
+def generate_password():
+    """Return a fixed password."""
+    return "123456"
 
 
 def send_sms(mobile_number, username, password):
@@ -42,7 +42,7 @@ def send_sms(mobile_number, username, password):
         f"Login using the credentials below:\n\n"
         f"Username: {username}\n"
         f"Password: {password}\n\n"
-        f"Login here: http://10.241.243.182:3000"
+        f"Login here: http://10.152.219.167:3000"
     )
 
     try:
@@ -143,7 +143,7 @@ def create_invoice():
         "invoice_id": str(result.inserted_id),
         "username": username,
         "password": password,
-        "login_url": "http://10.241.243.182:3000/login"
+        "login_url": "http://10.152.219.167:3000/login"
     }), 201
 
 

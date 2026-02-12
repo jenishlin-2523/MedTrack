@@ -9,6 +9,9 @@ import OrderPage from "../pages/OrderPage";
 import InvoicePage from "../pages/InvoicePage";
 import ProfilePage from "../pages/ProfilePage";
 
+// Import the Chatbot component
+import ChatBot from "../aiService/ChatBot";
+
 const UserDashboard = () => {
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -70,93 +73,101 @@ const UserDashboard = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-  <div style={{ flex: 1, paddingBottom: 60 /* height of footer */ }}>
-    {renderSection()}
-  </div>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative" }}>
+      <div style={{ flex: 1, paddingBottom: 80 /* Space for footer */ }}>
+        {renderSection()}
+      </div>
 
-  {/* Footer Navigation */}
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "space-around",
-      alignItems: "center",
-      padding: "10px 0",
-      background: "#fff",
-      borderTop: "1px solid #ddd",
-      position: "fixed",
-      bottom: -20,
-      width: "100%",
-      height: 60, // explicitly define height
-    }}
-  >
-    <button
-      onClick={() => setActiveTab("home")}
-      style={{
-        background: "none",
-        border: "none",
-        color: activeTab === "home" ? "#4CAF50" : "#555",
-        fontSize: "20px",
-      }}
-    >
-      <FaHome />
-      <div style={{ fontSize: "12px" }}>Home</div>
-    </button>
+      {/* FLOATING MEDICAL CHATBOT */}
+      <ChatBot />
 
-    <button
-      onClick={() => setActiveTab("schedule")}
-      style={{
-        background: "none",
-        border: "none",
-        color: activeTab === "schedule" ? "#4CAF50" : "#555",
-        fontSize: "20px",
-      }}
-    >
-      <MdSchedule />
-      <div style={{ fontSize: "12px" }}>Schedule</div>
-    </button>
+      {/* Footer Navigation */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-around",
+          alignItems: "center",
+          padding: "10px 0",
+          background: "#fff",
+          borderTop: "1px solid #ddd",
+          position: "fixed",
+          bottom: 0, // Fixed: set to 0 to be visible
+          width: "100%",
+          height: 60,
+          zIndex: 999 // Ensure it stays above content
+        }}
+      >
+        <button
+          onClick={() => setActiveTab("home")}
+          style={{
+            background: "none",
+            border: "none",
+            color: activeTab === "home" ? "#4CAF50" : "#555",
+            fontSize: "20px",
+            cursor: "pointer"
+          }}
+        >
+          <FaHome />
+          <div style={{ fontSize: "12px" }}>Home</div>
+        </button>
 
-    <button
-      onClick={() => setActiveTab("order")}
-      style={{
-        background: "none",
-        border: "none",
-        color: activeTab === "order" ? "#4CAF50" : "#555",
-        fontSize: "20px",
-      }}
-    >
-      <MdShoppingCart />
-      <div style={{ fontSize: "12px" }}>Order</div>
-    </button>
+        <button
+          onClick={() => setActiveTab("schedule")}
+          style={{
+            background: "none",
+            border: "none",
+            color: activeTab === "schedule" ? "#4CAF50" : "#555",
+            fontSize: "20px",
+            cursor: "pointer"
+          }}
+        >
+          <MdSchedule />
+          <div style={{ fontSize: "12px" }}>Schedule</div>
+        </button>
 
-    <button
-      onClick={() => setActiveTab("invoice")}
-      style={{
-        background: "none",
-        border: "none",
-        color: activeTab === "invoice" ? "#4CAF50" : "#555",
-        fontSize: "20px",
-      }}
-    >
-      <FaFileInvoice />
-      <div style={{ fontSize: "12px" }}>Invoice</div>
-    </button>
+        <button
+          onClick={() => setActiveTab("order")}
+          style={{
+            background: "none",
+            border: "none",
+            color: activeTab === "order" ? "#4CAF50" : "#555",
+            fontSize: "20px",
+            cursor: "pointer"
+          }}
+        >
+          <MdShoppingCart />
+          <div style={{ fontSize: "12px" }}>Order</div>
+        </button>
 
-    <button
-      onClick={() => setActiveTab("profile")}
-      style={{
-        background: "none",
-        border: "none",
-        color: activeTab === "profile" ? "#4CAF50" : "#555",
-        fontSize: "20px",
-      }}
-    >
-      <FaUser />
-      <div style={{ fontSize: "12px" }}>Profile</div>
-    </button>
-  </div>
-</div>
+        <button
+          onClick={() => setActiveTab("invoice")}
+          style={{
+            background: "none",
+            border: "none",
+            color: activeTab === "invoice" ? "#4CAF50" : "#555",
+            fontSize: "20px",
+            cursor: "pointer"
+          }}
+        >
+          <FaFileInvoice />
+          <div style={{ fontSize: "12px" }}>Invoice</div>
+        </button>
 
+        <button
+          onClick={() => setActiveTab("profile")}
+          style={{
+            background: "none",
+            border: "none",
+            color: activeTab === "profile" ? "#4CAF50" : "#555",
+            fontSize: "20px",
+            cursor: "pointer"
+          }}
+        >
+          <FaUser />
+          <div style={{ fontSize: "12px" }}>Profile</div>
+        </button>
+      </div>
+    </div>
   );
 };
 

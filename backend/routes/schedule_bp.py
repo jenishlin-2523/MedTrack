@@ -9,7 +9,7 @@ from flask_cors import CORS
 schedule_bp = Blueprint("schedule_bp_v1", __name__)
 CORS(schedule_bp, origins=[
     "http://localhost:3000",
-    "http://10.241.243.182:3000"
+    "http://10.152.219.167:3000"
 ], supports_credentials=True)
 
 

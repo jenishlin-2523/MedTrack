@@ -9,7 +9,7 @@ from flask_cors import CORS
 user_bp = Blueprint("user_bp", __name__)
 CORS(user_bp, origins=[
     "http://localhost:3000",
-    "http://10.241.243.182:3000"
+    "http://10.152.219.167:3000"
 ], supports_credentials=True)
 
 @user_bp.route("/update", methods=["PUT"])
