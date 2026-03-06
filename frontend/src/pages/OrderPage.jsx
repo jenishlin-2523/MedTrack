@@ -10,7 +10,7 @@ const OrderPage = () => {
 
   const username = localStorage.getItem("username");
   const token = localStorage.getItem("token");
-  const BASE_URL = process.env.REACT_APP_BASE_URL + "/api/invoice";
+  const BASE_URL = (process.env.REACT_APP_BASE_URL || "http://localhost:5000") + "/api/invoice";
 
   // Fetch out-of-stock medicines and pending orders
   useEffect(() => {
@@ -101,7 +101,7 @@ const OrderPage = () => {
               boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
             }}
           >
-            <span style={{ fontWeight: "bold", color: "#1b5e20" }}>{med.name}</span>
+            <span style={{ fontWeight: "normal", color: "#1b5e20" }}>{med.name}</span>
             <button
               disabled={isPending(med.name)}
               onClick={() => !isPending(med.name) && openDialog(med)}
@@ -112,7 +112,7 @@ const OrderPage = () => {
                 padding: "6px 12px",
                 borderRadius: 8,
                 cursor: isPending(med.name) ? "not-allowed" : "pointer",
-                fontWeight: "bold",
+                fontWeight: "normal",
                 transition: "background 0.2s",
               }}
               onMouseEnter={(e) => {
@@ -179,7 +179,7 @@ const OrderPage = () => {
                   cursor: "pointer",
                   backgroundColor: "#ffffff",
                   color: "#2e7d32",
-                  fontWeight: "bold",
+                  fontWeight: "normal",
                 }}
               >
                 Cancel
@@ -193,7 +193,7 @@ const OrderPage = () => {
                   backgroundColor: "#4caf50",
                   color: "#fff",
                   cursor: "pointer",
-                  fontWeight: "bold",
+                  fontWeight: "normal",
                 }}
               >
                 Confirm

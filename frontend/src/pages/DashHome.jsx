@@ -16,7 +16,7 @@ const DashHome = () => {
   const [invoices, setInvoices] = useState([]);
   const [error, setError] = useState("");
 
-  const username = "demoUser"; // replace with dynamic username if needed
+  const username = localStorage.getItem("username") || "demoUser";
 
   useEffect(() => {
     fetchMedicines();
@@ -40,7 +40,7 @@ const DashHome = () => {
   const fetchInvoices = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`${BASE_URL}/invoice/all/${username}`, {
+      const res = await axios.get(`${BASE_URL}/api/invoice/all/${username}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setInvoices(res.data || []);

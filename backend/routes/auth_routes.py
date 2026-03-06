@@ -28,8 +28,6 @@ def register():
 
     return jsonify({"msg": f"{role.capitalize()} registered successfully"}), 201
 
-
-
 @auth_bp.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -46,4 +44,3 @@ def login():
         "role": user.get("role", "user"),  # include role in response
         "msg": "Login successful"
     }), 200
-

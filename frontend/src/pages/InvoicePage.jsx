@@ -7,7 +7,7 @@ const InvoicePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const BASE_URL = process.env.REACT_APP_BASE_URL;
+  const BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:5000";
   const token = localStorage.getItem("token");
   const username = localStorage.getItem("username");
 
@@ -40,76 +40,76 @@ const InvoicePage = () => {
       <div style={{ padding: 20, color: "red", textAlign: "center" }}>{error}</div>
     );
 
-if (selectedInvoice) {
-  return (
-    <div style={{ maxWidth: "700px", margin: "0 auto", padding: "20px" }}>
-      <button
-        onClick={() => setSelectedInvoice(null)}
-        style={{
+  if (selectedInvoice) {
+    return (
+      <div style={{ maxWidth: "700px", margin: "0 auto", padding: "20px" }}>
+        <button
+          onClick={() => setSelectedInvoice(null)}
+          style={{
+            marginBottom: 20,
+            padding: "6px 12px",
+            borderRadius: 4,
+            border: "none",
+            cursor: "pointer",
+            backgroundColor: "#2563eb",
+            color: "#fff",
+          }}
+        >
+          ← Back to Invoices
+        </button>
+
+        {/* Invoice Header */}
+        <div style={{
+          backgroundColor: "#f0f4ff",
+          padding: "20px",
+          borderRadius: 10,
+          textAlign: "center",
           marginBottom: 20,
-          padding: "6px 12px",
-          borderRadius: 4,
-          border: "none",
-          cursor: "pointer",
-          backgroundColor: "#2563eb",
-          color: "#fff",
-        }}
-      >
-        ← Back to Invoices
-      </button>
+          boxShadow: "0 2px 6px rgba(0,0,0,0.05)"
+        }}>
+          <h2 style={{ margin: "0 0 10px 0" }}>Invoice</h2>
+          <p style={{ margin: "4px 0" }}>Invoice Number: {selectedInvoice.invoice_number}</p>
+          <p style={{ margin: "4px 0" }}>Patient: {selectedInvoice.patient_name}</p>
+          <p style={{ margin: "4px 0" }}>Date: {new Date(selectedInvoice.invoice_date).toLocaleDateString()}</p>
+        </div>
 
-      {/* Invoice Header */}
-      <div style={{
-        backgroundColor: "#f0f4ff",
-        padding: "20px",
-        borderRadius: 10,
-        textAlign: "center",
-        marginBottom: 20,
-        boxShadow: "0 2px 6px rgba(0,0,0,0.05)"
-      }}>
-        <h2 style={{ margin: "0 0 10px 0" }}>Invoice</h2>
-        <p style={{ margin: "4px 0" }}><strong>Invoice Number:</strong> {selectedInvoice.invoice_number}</p>
-        <p style={{ margin: "4px 0" }}><strong>Patient:</strong> {selectedInvoice.patient_name}</p>
-        <p style={{ margin: "4px 0" }}><strong>Date:</strong> {new Date(selectedInvoice.invoice_date).toLocaleDateString()}</p>
-      </div>
-
-      {/* Medicines Table */}
-      <div style={{ overflowX: "auto", marginBottom: 20 }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ backgroundColor: "#2563eb", color: "#fff" }}>
-              <th style={{ padding: "8px", textAlign: "left" }}>Medicine</th>
-              <th style={{ padding: "8px", textAlign: "center" }}>Qty</th>
-              <th style={{ padding: "8px", textAlign: "center" }}>Price</th>
-              <th style={{ padding: "8px", textAlign: "right" }}>Subtotal</th>
-            </tr>
-          </thead>
-          <tbody>
-            {selectedInvoice.items.map((item, idx) => (
-              <tr key={idx} style={{ borderBottom: "1px solid #ddd" }}>
-                <td style={{ padding: "8px" }}>{item.name}</td>
-                <td style={{ padding: "8px", textAlign: "center" }}>{item.selectedQty}</td>
-                <td style={{ padding: "8px", textAlign: "center" }}>₹ {item.price}</td>
-                <td style={{ padding: "8px", textAlign: "right" }}>₹ {item.subtotal}</td>
+        {/* Medicines Table */}
+        <div style={{ overflowX: "auto", marginBottom: 20 }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ backgroundColor: "#2563eb", color: "#fff" }}>
+                <th style={{ padding: "8px", textAlign: "left" }}>Medicine</th>
+                <th style={{ padding: "8px", textAlign: "center" }}>Qty</th>
+                <th style={{ padding: "8px", textAlign: "center" }}>Price</th>
+                <th style={{ padding: "8px", textAlign: "right" }}>Subtotal</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {selectedInvoice.items.map((item, idx) => (
+                <tr key={idx} style={{ borderBottom: "1px solid #ddd" }}>
+                  <td style={{ padding: "8px" }}>{item.name}</td>
+                  <td style={{ padding: "8px", textAlign: "center" }}>{item.selectedQty}</td>
+                  <td style={{ padding: "8px", textAlign: "center" }}>₹ {item.price}</td>
+                  <td style={{ padding: "8px", textAlign: "right" }}>₹ {item.subtotal}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-      {/* Total */}
-      <div style={{
-        textAlign: "right",
-        fontWeight: "bold",
-        fontSize: 16,
-        padding: "10px 0",
-        borderTop: "1px solid #ddd"
-      }}>
-        Total: ₹ {selectedInvoice.total_amount}
+        {/* Total */}
+        <div style={{
+          textAlign: "right",
+          fontWeight: "normal",
+          fontSize: 16,
+          padding: "10px 0",
+          borderTop: "1px solid #ddd"
+        }}>
+          Total: ₹ {selectedInvoice.total_amount}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
 
   // Schedule-like UI for all invoices
@@ -150,7 +150,7 @@ if (selectedInvoice) {
             }}
           >
             <div>
-              <p style={{ margin: 0, fontWeight: "bold", color: "#333" }}>
+              <p style={{ margin: 0, fontWeight: "normal", color: "#333" }}>
                 Invoice :  {inv.invoice_number}
               </p>
               <p style={{ margin: "4px 0 0 0", fontSize: 13, color: "#555" }}>

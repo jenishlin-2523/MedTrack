@@ -8,7 +8,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const BASE_URL = process.env.REACT_APP_BASE_URL;
+  const BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:5000";
   const token = localStorage.getItem("token");
   const username = localStorage.getItem("username");
 
@@ -120,7 +120,7 @@ const HomePage = () => {
           {upcomingSchedule.length > 0 ? (
             upcomingSchedule.map((i, idx) => (
               <div key={idx} style={{ marginBottom: 10 }}>
-                <p style={{ fontWeight: "bold", marginBottom: 4 }}>{i.name}</p>
+                <p style={{ fontWeight: "normal", marginBottom: 4 }}>{i.name}</p>
                 <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
                   {i.schedule.map((s, index) => (
                     <span

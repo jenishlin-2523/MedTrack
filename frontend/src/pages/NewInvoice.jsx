@@ -140,7 +140,7 @@ const NewInvoice = () => {
   const totalAmount = useMemo(() => invoiceItems.reduce((sum, i) => sum + (i.subtotal || 0), 0), [invoiceItems]);
 
   // --- PDF Rendering ---
-  const renderPdf = () => {
+  const renderPdf = (generatedUsername, generatedPassword) => {
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const margin = 40;
     let y = margin;
@@ -245,6 +245,7 @@ const NewInvoice = () => {
     doc.setTextColor(0);
     y += 30;
 
+    const startY = y;
     doc.setFontSize(10);
     doc.setFont(undefined, "bold");
     doc.text("THANK YOU FOR YOUR BUSINESS", margin, y);
@@ -254,6 +255,16 @@ const NewInvoice = () => {
     doc.text("Invoice Terms:", margin, y);
     y += 12;
     doc.text("Medicines once sold will not be returned or exchanged.", margin, y);
+
+    if (generatedUsername && generatedPassword) {
+      doc.setFont(undefined, "bold");
+      doc.setTextColor(blue);
+      doc.text("Your New Account Credentials:", 300, startY);
+      doc.setFont(undefined, "normal");
+      doc.setTextColor(0);
+      doc.text(`Username: ${generatedUsername}`, 300, startY + 12);
+      doc.text(`Password: ${generatedPassword}`, 300, startY + 24);
+    }
 
     doc.output("dataurlnewwindow");
   };
@@ -283,10 +294,13 @@ const NewInvoice = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      renderPdf();
+      renderPdf(res.data.username, res.data.password);
 
-      if (res.data.password) alert(`New user created! SMS sent to ${contactNumber}`);
-      else alert(`Invoice added for existing user ${contactNumber}`);
+      if (res.data.password) {
+        alert("New user created! Account credentials have been printed on the invoice.");
+      } else {
+        alert(`Invoice added for existing user ${contactNumber}`);
+      }
 
       setPatientName("");
       setContactNumber("");

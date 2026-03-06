@@ -8,23 +8,22 @@ from pymongo.errors import ConnectionFailure
 def create_app():
     app = Flask(__name__)
     
-    # CORS for React frontend
-    CORS(app, resources={r"/api/*": {
-    "origins": [
-        "http://localhost:3000",
-        "http://10.152.219.167:3000"
-    ],
-    "supports_credentials": True,
-    "allow_headers": ["Content-Type", "Authorization"],
-    "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-}})
+    # Load configurations from environment variables or use defaults
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
 
-
-
-    # App configuration
-    app.config["MONGO_URI"] = "mongodb://localhost:27017/medicine_tracker"
-    app.config["JWT_SECRET_KEY"] = "your-secret-key"
+    app.config["MONGO_URI"] = os.getenv("MONGO_URI", "mongodb://localhost:27017/medicine_tracker")
+    app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "your-secret-key")
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
+
+    # CORS for React frontend (allow localhost and any local network IP for development)
+    CORS(app, resources={r"/api/*": {
+        "origins": ["http://localhost:3000", "*"], # Allow local dev and broader access if needed
+        "supports_credentials": True,
+        "allow_headers": ["Content-Type", "Authorization"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    }})
 
     # Initialize MongoDB
     mongo.init_app(app)

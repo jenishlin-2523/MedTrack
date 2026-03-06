@@ -1,7 +1,7 @@
 // src/pages/ProfilePage.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaUserEdit, FaUser } from "react-icons/fa";
+import { FaUserEdit, FaUser, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const ProfilePage = () => {
@@ -13,7 +13,7 @@ const ProfilePage = () => {
   const [error, setError] = useState("");
   const [editMode, setEditMode] = useState(false);
 
-  const BASE_URL = process.env.REACT_APP_BASE_URL;
+  const BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:5000";
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
@@ -105,7 +105,7 @@ const ProfilePage = () => {
 
       {!editMode ? (
         <>
-          <p>Username: <strong>{username}</strong></p>
+          <p>Username: {username}</p>
           <button
             onClick={() => setEditMode(true)}
             style={{
@@ -188,18 +188,37 @@ const ProfilePage = () => {
       <hr style={{ margin: "20px 0" }} />
       <button
         onClick={handleLogout}
+        className="logout-mobile-only"
         style={{
           width: "100%",
-          padding: 10,
-          backgroundColor: "#ef4444",
-          color: "#fff",
-          border: "none",
-          borderRadius: 6,
+          padding: "12px",
+          backgroundColor: "rgba(239, 68, 68, 0.05)",
+          color: "#ef4444",
+          border: "1px solid rgba(239, 68, 68, 0.1)",
+          borderRadius: 12,
           cursor: "pointer",
+          fontSize: "16px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px",
+          transition: "all 0.3s ease",
         }}
       >
-        Logout
+        <FaSignOutAlt /> Logout
       </button>
+
+      <style>{`
+        .logout-mobile-only:active {
+          background-color: rgba(239, 68, 68, 0.1) !important;
+          transform: scale(0.98);
+        }
+        @media (min-width: 768px) {
+          .logout-mobile-only {
+            display: none !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

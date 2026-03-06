@@ -15,45 +15,25 @@ import string
 # Blueprint setup
 # ----------------------------
 invoice_bp = Blueprint("invoice_bp_v1", __name__)
-CORS(invoice_bp, origins=[
-    "http://localhost:3000",       # laptop React
-    "http://10.152.219.167:3000"     # mobile React
-], supports_credentials=True)
+CORS(invoice_bp, origins=["http://localhost:3000", "*"], supports_credentials=True)
+
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 
 # ----------------------------
 # Helper functions
 # ----------------------------
-def generate_password():
-    """Return a fixed password."""
-    return "123456"
+def generate_password(length=8):
+    """Return a random temporary password."""
+    letters = string.ascii_letters + string.digits
+    return ''.join(random.choice(letters) for i in range(length))
 
 
 def send_sms(mobile_number, username, password):
-    """Send SMS using Twilio."""
-    account_sid = "AC5cd07d299ff0ba4281975cefe6b41fc1"
-    auth_token = "0609975da4c753f72c77547ed1da51f3"
-    twilio_number = "+19852431281"
-
-    client = Client(account_sid, auth_token)
-
-    message_body = (
-        f"You have successfully purchased your medicine at MediTrack Pharmacy.\n"
-        f"Login using the credentials below:\n\n"
-        f"Username: {username}\n"
-        f"Password: {password}\n\n"
-        f"Login here: http://10.152.219.167:3000"
-    )
-
-    try:
-        client.messages.create(
-            body=message_body,
-            from_=twilio_number,
-            to=f"+91{mobile_number}"
-        )
-    except Exception as e:
-        print("Twilio Error:", e)
-
+    """Twilio SMS is disabled. Credentials will be printed directly on the generated bill."""
+    pass
 
 # ----------------------------
 # Create Invoice
@@ -143,7 +123,7 @@ def create_invoice():
         "invoice_id": str(result.inserted_id),
         "username": username,
         "password": password,
-        "login_url": "http://10.152.219.167:3000/login"
+        "login_url": os.getenv("FRONTEND_URL", "http://localhost:3000") + "/login"
     }), 201
 
 
