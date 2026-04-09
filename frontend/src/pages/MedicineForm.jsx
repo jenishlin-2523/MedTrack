@@ -50,8 +50,14 @@ const MedicineForm = () => {
     } catch (err) {
       console.error(err);
       const errorMsg = err.response?.data?.error || err.response?.data?.msg || "Error uploading CSV";
-      const details = err.response?.data?.details?.slice(0, 3).join("\n") || "";
-      alert(`${errorMsg}\n${details ? "\nFirst few errors:\n" + details : ""}`);
+      const rawDetails = err.response?.data?.details;
+      let details = "";
+      if (Array.isArray(rawDetails)) {
+        details = rawDetails.slice(0, 3).join("\n");
+      } else if (typeof rawDetails === "string") {
+        details = rawDetails;
+      }
+      alert(`${errorMsg}\n${details ? "\nDetails:\n" + details : ""}`);
     }
   };
 

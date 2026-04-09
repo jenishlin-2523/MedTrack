@@ -78,37 +78,37 @@ def upload_csv():
 
         for index, row in enumerate(reader, start=1):
             try:
+                # Normalize row keys to lowercase and stripped
+                norm_row = {str(k).lower().strip(): v for k, v in row.items()}
+                
                 # Required fields
-                name = row.get("name") or row.get("medicine_name") or row.get("medicine name")
-                expiry_str = row.get("expiry_date") or row.get("expiry date") or row.get("expiry")
+                name = norm_row.get("name") or norm_row.get("medicine_name") or norm_row.get("medicine name")
+                expiry_str = norm_row.get("expiry_date") or norm_row.get("expiry date") or norm_row.get("expiry")
                 
                 if not name:
-                    continue # Skip truly empty rows
+                    continue # Skip empty rows
 
-                # If expiry is missing, use a very far future date as a placeholder if needed, 
-                # but better to skip or default.
                 expiry_date = None
                 if expiry_str:
                     for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%m/%d/%Y", "%Y/%m/%d", "%d/%m/%Y"):
                         try:
-                            expiry_date = datetime.strptime(expiry_str.strip(), fmt).date()
+                            expiry_date = datetime.strptime(str(expiry_str).strip(), fmt).date()
                             break
                         except ValueError:
                             continue
 
-                # If still no expiry, default to 1 year from now to ensure it gets uploaded
                 if not expiry_date:
                     expiry_date = today + timedelta(days=365)
 
                 entry = {
                     "user_id": ObjectId(user_id),
-                    "name": name.strip(),
-                    "price": float(row.get("price") or 0),
-                    "manufacturer_name": (row.get("manufacturer_name") or row.get("manufacturer") or "").strip(),
-                    "type": (row.get("type") or "").strip(),
-                    "pack_size_label": (row.get("pack_size_label") or row.get("pack_size") or "").strip(),
+                    "name": str(name).strip(),
+                    "price": float(norm_row.get("price") or 0),
+                    "manufacturer_name": str(norm_row.get("manufacturer_name") or norm_row.get("manufacturer") or "").strip(),
+                    "type": str(norm_row.get("type") or "").strip(),
+                    "pack_size_label": str(norm_row.get("pack_size_label") or norm_row.get("pack_size") or "").strip(),
                     "expiry_date": expiry_date.strftime("%Y-%m-%d"),
-                    "quantity": int(row.get("quantity") or 0),
+                    "quantity": int(norm_row.get("quantity") or 0),
                     "notification_read": False
                 }
                 entries.append(entry)
