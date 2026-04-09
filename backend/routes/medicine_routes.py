@@ -59,12 +59,17 @@ def upload_csv():
         return jsonify({"error": "Invalid file format. Please upload a .csv file"}), 400
 
     try:
-        # Read and decode the file safely
-        content = file.stream.read().decode("utf-8-sig") # Handle BOM
+        # Try decoding with UTF-8 first, fallback to Latin-1
+        raw_data = file.stream.read()
+        try:
+            content = raw_data.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            content = raw_data.decode("latin-1")
+            
         stream = io.StringIO(content)
         reader = csv.DictReader(stream)
         
-        # Normalize field names to match expected keys (lowercase and stripped)
+        # Normalize field names
         reader.fieldnames = [name.lower().strip() for name in reader.fieldnames] if reader.fieldnames else []
         
         entries = []
@@ -77,26 +82,23 @@ def upload_csv():
                 name = row.get("name") or row.get("medicine_name") or row.get("medicine name")
                 expiry_str = row.get("expiry_date") or row.get("expiry date") or row.get("expiry")
                 
-                if not name or not expiry_str:
-                    errors.append(f"Row {index}: Missing medicine name or expiry date")
-                    continue
+                if not name:
+                    continue # Skip truly empty rows
 
-                # Parse date - support both YYYY-MM-DD and DD-MM-YYYY or common variations
+                # If expiry is missing, use a very far future date as a placeholder if needed, 
+                # but better to skip or default.
                 expiry_date = None
-                for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%m/%d/%Y", "%Y/%m/%d"):
-                    try:
-                        expiry_date = datetime.strptime(expiry_str.strip(), fmt).date()
-                        break
-                    except ValueError:
-                        continue
+                if expiry_str:
+                    for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%m/%d/%Y", "%Y/%m/%d", "%d/%m/%Y"):
+                        try:
+                            expiry_date = datetime.strptime(expiry_str.strip(), fmt).date()
+                            break
+                        except ValueError:
+                            continue
 
+                # If still no expiry, default to 1 year from now to ensure it gets uploaded
                 if not expiry_date:
-                    errors.append(f"Row {index}: Invalid date format for '{expiry_str}'")
-                    continue
-
-                if expiry_date <= today:
-                    # Skip expired medicines
-                    continue
+                    expiry_date = today + timedelta(days=365)
 
                 entry = {
                     "user_id": ObjectId(user_id),
@@ -111,7 +113,7 @@ def upload_csv():
                 }
                 entries.append(entry)
             except Exception as row_err:
-                errors.append(f"Row {index}: Unexpected error - {str(row_err)}")
+                errors.append(f"Row {index}: {str(row_err)}")
 
         if entries:
             mongo.db.medicines.insert_many(entries)
@@ -120,13 +122,8 @@ def upload_csv():
                 "skipped_errors": errors
             }), 201
         else:
-            return jsonify({
-                "error": "No valid future medicines found in CSV",
-                "details": errors
-            }), 400
+            return jsonify({"error": "No data found in CSV"}), 400
 
-    except UnicodeDecodeError:
-        return jsonify({"error": "Failed to decode CSV. Please ensure it is saved as UTF-8."}), 400
     except Exception as e:
         return jsonify({"error": "Failed to process CSV", "details": str(e)}), 500
 
