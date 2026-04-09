@@ -141,6 +141,12 @@ def get_invoice_details(invoice_number):
     invoice = mongo.db.invoices.find_one({"invoice_number": invoice_number}, {"_id": 0})
     if not invoice:
         return jsonify({"msg": "Invoice not found"}), 404
+        
+    if "user_id" in invoice:
+        invoice["user_id"] = str(invoice["user_id"])
+    if "created_at" in invoice and isinstance(invoice["created_at"], datetime):
+        invoice["created_at"] = invoice["created_at"].isoformat()
+        
     return jsonify(invoice), 200
 
 
@@ -154,6 +160,10 @@ def get_all_invoices(username):
         invoices = list(mongo.db.invoices.find({"username": username}).sort("created_at", -1))
         for inv in invoices:
             inv["_id"] = str(inv["_id"])
+            if "user_id" in inv:
+                inv["user_id"] = str(inv["user_id"])
+            if "created_at" in inv and isinstance(inv["created_at"], datetime):
+                inv["created_at"] = inv["created_at"].isoformat()
         return jsonify(invoices), 200
     except Exception as e:
         print("Error fetching invoices:", e)
@@ -294,6 +304,10 @@ def all_orders():
         orders = list(mongo.db.orders.find().sort("createdAt", -1))
         for o in orders:
             o["_id"] = str(o["_id"])
+            if "createdAt" in o and isinstance(o["createdAt"], datetime):
+                o["createdAt"] = o["createdAt"].isoformat()
+            if "acceptedAt" in o and isinstance(o["acceptedAt"], datetime):
+                o["acceptedAt"] = o["acceptedAt"].isoformat()
         return jsonify(orders), 200
     except Exception as e:
         return jsonify({"error": "Failed to fetch orders"}), 500
@@ -306,6 +320,10 @@ def user_orders(username):
         orders = list(mongo.db.orders.find({"requestedBy": username, "status": "pending"}))
         for o in orders:
             o["_id"] = str(o["_id"])
+            if "createdAt" in o and isinstance(o["createdAt"], datetime):
+                o["createdAt"] = o["createdAt"].isoformat()
+            if "acceptedAt" in o and isinstance(o["acceptedAt"], datetime):
+                o["acceptedAt"] = o["acceptedAt"].isoformat()
         return jsonify(orders), 200
     except Exception as e:
         return jsonify({"error": "Failed to fetch user orders"}), 500
@@ -318,6 +336,10 @@ def pending_orders():
         orders = list(mongo.db.orders.find({"status": "pending"}).sort("createdAt", -1))
         for o in orders:
             o["_id"] = str(o["_id"])
+            if "createdAt" in o and isinstance(o["createdAt"], datetime):
+                o["createdAt"] = o["createdAt"].isoformat()
+            if "acceptedAt" in o and isinstance(o["acceptedAt"], datetime):
+                o["acceptedAt"] = o["acceptedAt"].isoformat()
         return jsonify(orders), 200
     except Exception as e:
         return jsonify({"error": "Failed to fetch pending orders"}), 500
