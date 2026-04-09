@@ -55,41 +55,78 @@ def upload_csv():
         return jsonify({"error": "CSV file missing"}), 400
 
     file = request.files['csv']
-    filename = secure_filename(file.filename)
-
-    if not filename.endswith('.csv'):
+    if not file.filename.endswith('.csv'):
         return jsonify({"error": "Invalid file format. Please upload a .csv file"}), 400
 
     try:
-        stream = io.StringIO(file.stream.read().decode("utf-8"), newline=None)
+        # Read and decode the file safely
+        content = file.stream.read().decode("utf-8-sig") # Handle BOM
+        stream = io.StringIO(content)
         reader = csv.DictReader(stream)
+        
+        # Normalize field names to match expected keys (lowercase and stripped)
+        reader.fieldnames = [name.lower().strip() for name in reader.fieldnames] if reader.fieldnames else []
+        
         entries = []
+        errors = []
         today = datetime.today().date()
 
-        for row in reader:
-            expiry_date = datetime.strptime(row["expiry_date"], "%Y-%m-%d").date()
-            if expiry_date <= today:
-                continue  # skip expired or today's
+        for index, row in enumerate(reader, start=1):
+            try:
+                # Required fields
+                name = row.get("name") or row.get("medicine_name") or row.get("medicine name")
+                expiry_str = row.get("expiry_date") or row.get("expiry date") or row.get("expiry")
+                
+                if not name or not expiry_str:
+                    errors.append(f"Row {index}: Missing medicine name or expiry date")
+                    continue
 
-            entry = {
-                "user_id": ObjectId(user_id),
-                "name": row["name"],
-                "price": float(row.get("price", 0)),
-                "manufacturer_name": row.get("manufacturer_name", ""),
-                "type": row.get("type", ""),
-                "pack_size_label": row.get("pack_size_label", ""),
-                "expiry_date": expiry_date.strftime("%Y-%m-%d"),
-                "quantity": int(row.get("quantity", 0)),
-                "notification_read": False
-            }
-            entries.append(entry)
+                # Parse date - support both YYYY-MM-DD and DD-MM-YYYY or common variations
+                expiry_date = None
+                for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%m/%d/%Y", "%Y/%m/%d"):
+                    try:
+                        expiry_date = datetime.strptime(expiry_str.strip(), fmt).date()
+                        break
+                    except ValueError:
+                        continue
+
+                if not expiry_date:
+                    errors.append(f"Row {index}: Invalid date format for '{expiry_str}'")
+                    continue
+
+                if expiry_date <= today:
+                    # Skip expired medicines
+                    continue
+
+                entry = {
+                    "user_id": ObjectId(user_id),
+                    "name": name.strip(),
+                    "price": float(row.get("price") or 0),
+                    "manufacturer_name": (row.get("manufacturer_name") or row.get("manufacturer") or "").strip(),
+                    "type": (row.get("type") or "").strip(),
+                    "pack_size_label": (row.get("pack_size_label") or row.get("pack_size") or "").strip(),
+                    "expiry_date": expiry_date.strftime("%Y-%m-%d"),
+                    "quantity": int(row.get("quantity") or 0),
+                    "notification_read": False
+                }
+                entries.append(entry)
+            except Exception as row_err:
+                errors.append(f"Row {index}: Unexpected error - {str(row_err)}")
 
         if entries:
             mongo.db.medicines.insert_many(entries)
-            return jsonify({"msg": f"{len(entries)} medicines uploaded successfully"}), 201
+            return jsonify({
+                "msg": f"{len(entries)} medicines uploaded successfully",
+                "skipped_errors": errors
+            }), 201
         else:
-            return jsonify({"msg": "No valid future medicines to upload"}), 400
+            return jsonify({
+                "error": "No valid future medicines found in CSV",
+                "details": errors
+            }), 400
 
+    except UnicodeDecodeError:
+        return jsonify({"error": "Failed to decode CSV. Please ensure it is saved as UTF-8."}), 400
     except Exception as e:
         return jsonify({"error": "Failed to process CSV", "details": str(e)}), 500
 
