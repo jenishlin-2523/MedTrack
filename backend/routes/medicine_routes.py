@@ -66,7 +66,7 @@ def upload_csv():
         except UnicodeDecodeError:
             content = raw_data.decode("latin-1")
             
-        stream = io.StringIO(content)
+        stream = io.StringIO(content, newline='')
         reader = csv.DictReader(stream)
         
         # Normalize field names
