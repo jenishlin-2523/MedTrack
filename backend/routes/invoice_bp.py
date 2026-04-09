@@ -7,7 +7,6 @@ from datetime import datetime
 from extensions import mongo
 from flask_cors import CORS, cross_origin
 from werkzeug.security import generate_password_hash
-from twilio.rest import Client
 import random
 import string
 
@@ -29,11 +28,6 @@ def generate_password(length=8):
     """Return a random temporary password."""
     letters = string.ascii_letters + string.digits
     return ''.join(random.choice(letters) for i in range(length))
-
-
-def send_sms(mobile_number, username, password):
-    """Twilio SMS is disabled. Credentials will be printed directly on the generated bill."""
-    pass
 
 # ----------------------------
 # Create Invoice
@@ -82,7 +76,7 @@ def create_invoice():
     existing_user = mongo.db.users.find_one({"username": username})
 
     if not existing_user:
-        # New user → create and send SMS
+        # New user created
         password = generate_password()
         mongo.db.users.insert_one({
             "username": username,
@@ -91,10 +85,6 @@ def create_invoice():
             "name": patient_name,
             "created_at": datetime.utcnow()
         })
-        try:
-            send_sms(contact_number, username, password)
-        except Exception as e:
-            print("SMS/send error:", e)
     else:
         # Update patient name if changed
         if existing_user.get("name") != patient_name:

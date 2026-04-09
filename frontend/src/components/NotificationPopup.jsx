@@ -73,7 +73,7 @@ const NotificationPopup = ({ isOpen, onClose, onMarkRead }) => {
   const fetchNotifications = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/medicine/notifications?unread=false",
+        "https://meditrack-backend-ynr1.onrender.com/api/medicine/notifications?unread=false",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -111,7 +111,7 @@ const NotificationPopup = ({ isOpen, onClose, onMarkRead }) => {
   const markAllAsRead = async () => {
     try {
       await axios.patch(
-        "http://localhost:5000/api/medicine/notifications/mark-as-read",
+        "https://meditrack-backend-ynr1.onrender.com/api/medicine/notifications/mark-as-read",
         {},
         {
           headers: { Authorization: `Bearer ${token}` },

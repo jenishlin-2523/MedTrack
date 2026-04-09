@@ -33,7 +33,7 @@ const MedicineForm = () => {
     formDataObj.append("csv", csvFile);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/medicine/upload-csv", formDataObj, {
+      const res = await axios.post("https://meditrack-backend-ynr1.onrender.com/api/medicine/upload-csv", formDataObj, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
@@ -52,7 +52,7 @@ const MedicineForm = () => {
     const token = getToken();
 
     try {
-      const res = await axios.post("http://localhost:5000/api/medicine/add", formData, {
+      const res = await axios.post("https://meditrack-backend-ynr1.onrender.com/api/medicine/add", formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

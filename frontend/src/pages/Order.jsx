@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
   const token = localStorage.getItem("token");
-  const BASE_URL = (process.env.REACT_APP_BASE_URL || "http://localhost:5000") + "/api/invoice";
+  const BASE_URL = (process.env.REACT_APP_BASE_URL || "https://meditrack-backend-ynr1.onrender.com") + "/api/invoice";
   const navigate = useNavigate();
 
   // Fetch pending refill requests

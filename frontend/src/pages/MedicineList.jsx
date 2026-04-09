@@ -110,7 +110,7 @@ const MedicineList = () => {
   const fetchMedicines = async () => {
     try {
       const token = getToken();
-      const res = await axios.get("http://localhost:5000/api/medicine/list", {
+      const res = await axios.get("https://meditrack-backend-ynr1.onrender.com/api/medicine/list", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

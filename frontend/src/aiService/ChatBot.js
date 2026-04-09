@@ -6,7 +6,7 @@ const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   // UPDATED SYSTEM PROMPT: Added strict length constraints
   const systemPrompt = {
     role: "system",
@@ -20,7 +20,7 @@ const ChatBot = () => {
   const [chatHistory, setChatHistory] = useState([
     { role: "assistant", content: "Hello! How can I help with your health today?" },
   ]);
-  
+
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ const ChatBot = () => {
 
     const userMessage = { role: "user", content: input };
     const updatedHistory = [...chatHistory, userMessage];
-    
+
     setChatHistory(updatedHistory);
     setInput("");
     setLoading(true);
@@ -47,12 +47,12 @@ const ChatBot = () => {
           model: "llama-3.1-8b-instant",
           messages: [systemPrompt, ...updatedHistory],
           // Added max_tokens to further force brevity
-          max_tokens: 100, 
+          max_tokens: 100,
           temperature: 0.5,
         },
         {
           headers: {
-            "Authorization": `Bearer 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`,
+            "Authorization": `Bearer ${process.env.REACT_APP_GROQ_API_KEY}`,
             "Content-Type": "application/json",
           },
         }

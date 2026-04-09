@@ -7,7 +7,7 @@ const InvoicePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:5000";
+  const BASE_URL = process.env.REACT_APP_BASE_URL || "https://meditrack-backend-ynr1.onrender.com";
   const token = localStorage.getItem("token");
   const username = localStorage.getItem("username");
 

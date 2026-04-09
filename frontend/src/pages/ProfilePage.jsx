@@ -13,7 +13,7 @@ const ProfilePage = () => {
   const [error, setError] = useState("");
   const [editMode, setEditMode] = useState(false);
 
-  const BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:5000";
+  const BASE_URL = process.env.REACT_APP_BASE_URL || "https://meditrack-backend-ynr1.onrender.com";
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 

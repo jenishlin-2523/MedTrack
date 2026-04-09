@@ -26,7 +26,7 @@ const UserDashboard = () => {
     navigate("/login");
   };
 
-  const BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:5000";
+  const BASE_URL = process.env.REACT_APP_BASE_URL || "https://meditrack-backend-ynr1.onrender.com";
 
   useEffect(() => {
     const fetchInvoice = async () => {

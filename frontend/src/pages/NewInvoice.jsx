@@ -33,7 +33,7 @@ const NewInvoice = () => {
   const [ignoreBlur, setIgnoreBlur] = useState(false);
 
   const token = localStorage.getItem("token");
-  const BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:5000";
+  const BASE_URL = process.env.REACT_APP_BASE_URL || "https://meditrack-backend-ynr1.onrender.com";
 
   // --- Invoice Number Helpers ---
   const nextInvoiceNumber = (last) => {

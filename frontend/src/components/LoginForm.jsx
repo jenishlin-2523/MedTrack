@@ -17,7 +17,7 @@ const LoginForm = () => {
     setLoading(true);
 
     try {
-      const BASE_URL = process.env.REACT_APP_API_BASE || "http://localhost:5000";
+      const BASE_URL = process.env.REACT_APP_API_BASE || "https://meditrack-backend-ynr1.onrender.com";
 
       const res = await axios.post(`${BASE_URL}/api/auth/login`, {
         username,

@@ -35,7 +35,7 @@ const Dashboard = () => {
   const fetchUnreadCount = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/medicine/notifications",
+        "https://meditrack-backend-ynr1.onrender.com/api/medicine/notifications",
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const allNotifications = res.data.notifications || [];

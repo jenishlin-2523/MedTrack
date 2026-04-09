@@ -9,7 +9,7 @@ import {
 } from "recharts";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#AA336A"];
-const BASE_URL = process.env.REACT_APP_API_BASE || "http://localhost:5000";
+const BASE_URL = process.env.REACT_APP_API_BASE || "https://meditrack-backend-ynr1.onrender.com";
 
 const DashHome = () => {
   const [medicines, setMedicines] = useState([]);

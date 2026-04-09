@@ -19,7 +19,7 @@ const SchedulePage = () => {
 
   const username = localStorage.getItem("username");
   const token = localStorage.getItem("token");
-  const BASE_URL = (process.env.REACT_APP_API_BASE || "http://localhost:5000") + "/api/invoice";
+  const BASE_URL = (process.env.REACT_APP_API_BASE || "https://meditrack-backend-ynr1.onrender.com") + "/api/invoice";
 
   const fetchSchedules = async () => {
     try {

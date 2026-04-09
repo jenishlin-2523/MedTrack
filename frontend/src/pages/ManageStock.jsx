@@ -19,7 +19,7 @@ const ManageStock = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/medicine/list", {
+      .get("https://meditrack-backend-ynr1.onrender.com/api/medicine/list", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
