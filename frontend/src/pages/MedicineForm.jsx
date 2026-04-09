@@ -206,7 +206,7 @@ const MedicineForm = () => {
       <div style={sectionStyle}>
         <h3 style={headingStyle}>Upload CSV File</h3>
         <p style={{ fontSize: "12px", color: "#666", marginBottom: "10px" }}>
-          <b>Format:</b> name, expiry_date (YYYY-MM-DD), price, quantity, manufacturer_name, type, pack_size_label
+          <b>Format:</b> Medicine Name, Manufacturer, Type, Pack Size, Expiry Date (YYYY-MM-DD), Stock Qty, Price (₹)
         </p>
         <input type="file" accept=".csv" onChange={handleCSVChange} style={{ marginTop: "10px" }} />
         <br />

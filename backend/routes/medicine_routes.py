@@ -81,9 +81,9 @@ def upload_csv():
                 # Normalize row keys to lowercase and stripped
                 norm_row = {str(k).lower().strip(): v for k, v in row.items()}
                 
-                # Required fields
-                name = norm_row.get("name") or norm_row.get("medicine_name") or norm_row.get("medicine name")
-                expiry_str = norm_row.get("expiry_date") or norm_row.get("expiry date") or norm_row.get("expiry")
+                # Required fields with explicit mapping for user's Excel format
+                name = norm_row.get("medicine name") or norm_row.get("name") or norm_row.get("medicine_name")
+                expiry_str = norm_row.get("expiry date") or norm_row.get("expiry_date") or norm_row.get("expiry")
                 
                 if not name:
                     continue # Skip empty rows
@@ -103,12 +103,12 @@ def upload_csv():
                 entry = {
                     "user_id": ObjectId(user_id),
                     "name": str(name).strip(),
-                    "price": float(norm_row.get("price") or 0),
-                    "manufacturer_name": str(norm_row.get("manufacturer_name") or norm_row.get("manufacturer") or "").strip(),
+                    "price": float(norm_row.get("price (₹)") or norm_row.get("price") or 0),
+                    "manufacturer_name": str(norm_row.get("manufacturer") or norm_row.get("manufacturer_name") or "").strip(),
                     "type": str(norm_row.get("type") or "").strip(),
-                    "pack_size_label": str(norm_row.get("pack_size_label") or norm_row.get("pack_size") or "").strip(),
+                    "pack_size_label": str(norm_row.get("pack size") or norm_row.get("pack_size_label") or norm_row.get("pack_size") or "").strip(),
                     "expiry_date": expiry_date.strftime("%Y-%m-%d"),
-                    "quantity": int(norm_row.get("quantity") or 0),
+                    "quantity": int(norm_row.get("stock qty") or norm_row.get("quantity") or norm_row.get("stock_qty") or 0),
                     "notification_read": False
                 }
                 entries.append(entry)
