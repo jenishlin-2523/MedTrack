@@ -59,7 +59,7 @@ def upload_csv():
         return jsonify({"error": "Invalid file format. Please upload a .csv file"}), 400
 
     try:
-        # Try decoding with UTF-8 first, fallback to Latin-1
+        # Read and decode the file safely
         raw_data = file.stream.read()
         try:
             content = raw_data.decode("utf-8-sig")
@@ -67,26 +67,49 @@ def upload_csv():
             content = raw_data.decode("latin-1")
             
         stream = io.StringIO(content, newline='')
-        reader = csv.DictReader(stream)
         
-        # Normalize field names
-        reader.fieldnames = [name.lower().strip() for name in reader.fieldnames] if reader.fieldnames else []
+        # Try to detect delimiter automatically
+        try:
+            sample = content[:1024]
+            dialect = csv.Sniffer().sniff(sample)
+            reader = csv.DictReader(stream, dialect=dialect)
+        except Exception:
+            # Fallback to default comma
+            stream.seek(0)
+            reader = csv.DictReader(stream)
         
+        # Build a mapping of normalized headers to original headers
+        # This handles extra spaces, capitalization, and partial matches
+        orig_headers = reader.fieldnames if reader.fieldnames else []
+        header_map = {}
+        for h in orig_headers:
+            clean_h = str(h).lower().strip()
+            header_map[clean_h] = h
+            
+        def get_val(row, *aliases):
+            for alias in aliases:
+                norm_alias = alias.lower().strip()
+                # Direct match
+                if norm_alias in header_map:
+                    return row.get(header_map[norm_alias])
+                # Partial match (e.g. "medicine name" contains "medicine")
+                for clean_h, orig_h in header_map.items():
+                    if norm_alias in clean_h or clean_h in norm_alias:
+                        return row.get(orig_h)
+            return None
+
         entries = []
         errors = []
         today = datetime.today().date()
 
         for index, row in enumerate(reader, start=1):
             try:
-                # Normalize row keys to lowercase and stripped
-                norm_row = {str(k).lower().strip(): v for k, v in row.items()}
-                
-                # Required fields with explicit mapping for user's Excel format
-                name = norm_row.get("medicine name") or norm_row.get("name") or norm_row.get("medicine_name")
-                expiry_str = norm_row.get("expiry date") or norm_row.get("expiry_date") or norm_row.get("expiry")
+                # Required fields with aggressive mapping
+                name = get_val(row, "medicine name", "name", "medicine_name", "medicine")
+                expiry_str = get_val(row, "expiry date", "expiry_date", "expiry", "exp")
                 
                 if not name:
-                    continue # Skip empty rows
+                    continue 
 
                 expiry_date = None
                 if expiry_str:
@@ -103,12 +126,12 @@ def upload_csv():
                 entry = {
                     "user_id": ObjectId(user_id),
                     "name": str(name).strip(),
-                    "price": float(norm_row.get("price (₹)") or norm_row.get("price") or 0),
-                    "manufacturer_name": str(norm_row.get("manufacturer") or norm_row.get("manufacturer_name") or "").strip(),
-                    "type": str(norm_row.get("type") or "").strip(),
-                    "pack_size_label": str(norm_row.get("pack size") or norm_row.get("pack_size_label") or norm_row.get("pack_size") or "").strip(),
+                    "price": float(get_val(row, "price", "price (₹)", "rate") or 0),
+                    "manufacturer_name": str(get_val(row, "manufacturer", "manufacturer_name", "mfg") or "").strip(),
+                    "type": str(get_val(row, "type", "form") or "").strip(),
+                    "pack_size_label": str(get_val(row, "pack size", "pack_size_label", "pack") or "").strip(),
                     "expiry_date": expiry_date.strftime("%Y-%m-%d"),
-                    "quantity": int(norm_row.get("stock qty") or norm_row.get("quantity") or norm_row.get("stock_qty") or 0),
+                    "quantity": int(get_val(row, "stock qty", "quantity", "stock_qty", "stock", "qty") or 0),
                     "notification_read": False
                 }
                 entries.append(entry)
