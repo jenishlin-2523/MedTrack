@@ -39,11 +39,19 @@ const MedicineForm = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-      alert(res.data.message || "CSV uploaded successfully");
+      
+      const successMsg = res.data.msg || "CSV uploaded successfully";
+      const skipped = res.data.skipped_errors?.length > 0 
+        ? `\n\nSkipped ${res.data.skipped_errors.length} rows due to errors.` 
+        : "";
+      
+      alert(successMsg + skipped);
       setCsvFile(null);
     } catch (err) {
       console.error(err);
-      alert("Error uploading CSV");
+      const errorMsg = err.response?.data?.error || err.response?.data?.msg || "Error uploading CSV";
+      const details = err.response?.data?.details?.slice(0, 3).join("\n") || "";
+      alert(`${errorMsg}\n${details ? "\nFirst few errors:\n" + details : ""}`);
     }
   };
 
@@ -191,6 +199,9 @@ const MedicineForm = () => {
       {/* CSV Upload Section */}
       <div style={sectionStyle}>
         <h3 style={headingStyle}>Upload CSV File</h3>
+        <p style={{ fontSize: "12px", color: "#666", marginBottom: "10px" }}>
+          <b>Format:</b> name, expiry_date (YYYY-MM-DD), price, quantity, manufacturer_name, type, pack_size_label
+        </p>
         <input type="file" accept=".csv" onChange={handleCSVChange} style={{ marginTop: "10px" }} />
         <br />
         <button onClick={handleCSVUpload} style={greenButton}>Upload CSV</button>
